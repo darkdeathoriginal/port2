@@ -2,6 +2,7 @@
   "name": "survivor-portfolio",
   "version": "1.0.0",
   "description": "A portfolio website inspired by the art style of 'Don't Starve'",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "dev": "vite",

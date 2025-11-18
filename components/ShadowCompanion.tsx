@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SketchButton } from './SketchButton';
 import { sendMessageToShadow } from '../services/gemini';
 import { MessageCircle, X, Send, Ghost } from 'lucide-react';
 
@@ -26,12 +25,22 @@ export const ShadowCompanion: React.FC = () => {
     if (!input.trim() || isLoading) return;
 
     const userMsg = input;
+    const currentHistory = [...messages]; // Capture history before adding new user message for state
+    
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
     try {
-      const response = await sendMessageToShadow(userMsg);
+      // We pass the history including the previous messages. 
+      // The backend will add the new 'userMsg' to the context via the 'message' param in the API call,
+      // but providing full context (including the just-sent message if we wanted, but usually history is prior context)
+      // helps. However, the API design in services/gemini takes message + history.
+      // Let's pass the history *prior* to this new message to avoid duplication if the backend appends it,
+      // OR if the backend treats 'history' as 'previous turns'.
+      // Based on api/chat.js, it initializes chat with `history`.
+      
+      const response = await sendMessageToShadow(userMsg, currentHistory);
       setMessages(prev => [...prev, { role: 'model', text: response }]);
     } catch (e) {
       setMessages(prev => [...prev, { role: 'model', text: "The shadows are interfering..." }]);
